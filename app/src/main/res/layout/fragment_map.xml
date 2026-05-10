@@ -14,12 +14,12 @@
         android:layout_height="wrap_content"
         android:text="Home"
         android:layout_gravity="top|start"
-        android:layout_margin="16dp" />
+        android:layout_margin="8dp" />
 
     <Button
         android:id="@+id/btnClear"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Clear Map"
-        android:layout_marginStart="8dp" />
+        android:layout_marginStart="32dp" />
 </FrameLayout>
