@@ -1,5 +1,8 @@
 package com.alex.geiger;
 
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.Point;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,14 +14,17 @@ import androidx.fragment.app.Fragment;
 import org.osmdroid.config.Configuration;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
-import org.osmdroid.views.overlay.Marker;
+import org.osmdroid.views.Projection;
+import org.osmdroid.views.overlay.Overlay;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class MapFragment extends Fragment {
 
     private MapView map;
     private Button btnHome;
+    private RadiationOverlay radiationOverlay;
 
     private static final GeoPoint CAMPI_BISENZIO =
             new GeoPoint(43.8245, 11.1306);
@@ -53,13 +59,16 @@ public class MapFragment extends Fragment {
         map.getController().setZoom(15.5);
         map.getController().setCenter(CAMPI_BISENZIO);
 
+        radiationOverlay = new RadiationOverlay();
+        map.getOverlays().add(radiationOverlay);
+
         btnHome.setOnClickListener(v -> {
             if (getActivity() instanceof MainActivity) {
                 ((MainActivity) getActivity()).showHome();
             }
         });
 
-        redrawMarkers();
+        redraw();
 
         return view;
     }
@@ -67,46 +76,74 @@ public class MapFragment extends Fragment {
     public synchronized void addRadiationMarker(double lat, double lon, short cpm, double usv_h) {
         points.add(new RadiationPoint(lat, lon, cpm, usv_h));
 
-        if (getActivity() == null) {
-            return;
-        }
+        if (getActivity() == null) return;
 
-        getActivity().runOnUiThread(() -> {
-            try {
-                redrawMarkers();
-            } catch (Exception ignored) {
-            }
-        });
+        getActivity().runOnUiThread(() -> redraw());
     }
 
-    private synchronized void redrawMarkers() {
-        if (map == null) {
-            return;
-        }
+    private synchronized List<RadiationPoint> copyPoints() {
+        return new ArrayList<>(points);
+    }
 
-        map.getOverlays().clear();
+    private void redraw() {
+        if (map == null) return;
 
-        for (RadiationPoint p : points) {
-            GeoPoint point = new GeoPoint(p.lat, p.lon);
+        List<RadiationPoint> copy = copyPoints();
 
-            Marker marker = new Marker(map);
-            marker.setPosition(point);
-            marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-
-            marker.setTitle("CPM: " + p.cpm + " | uSv/h: " + String.format("%.3f", p.usv_h));
-            marker.setSnippet("Lat: " + p.lat + "\nLon: " + p.lon);
-
-            map.getOverlays().add(marker);
-        }
-
-        if (points.size() == 0) {
-            map.getController().setCenter(CAMPI_BISENZIO);
-        } else {
-            RadiationPoint last = points.get(points.size() - 1);
+        if (copy.size() > 0) {
+            RadiationPoint last = copy.get(copy.size() - 1);
             map.getController().setCenter(new GeoPoint(last.lat, last.lon));
+        } else {
+            map.getController().setCenter(CAMPI_BISENZIO);
         }
 
         map.invalidate();
+    }
+
+    private class RadiationOverlay extends Overlay {
+
+        private final Paint circlePaint = new Paint();
+        private final Paint textPaint = new Paint();
+
+        RadiationOverlay() {
+            circlePaint.setAntiAlias(true);
+            circlePaint.setStyle(Paint.Style.FILL);
+
+            textPaint.setAntiAlias(true);
+            textPaint.setTextSize(32.0f);
+            textPaint.setTextAlign(Paint.Align.CENTER);
+        }
+
+        @Override
+        public void draw(Canvas canvas, MapView mapView, boolean shadow) {
+            if (shadow) return;
+
+            Projection projection = mapView.getProjection();
+            Point screenPoint = new Point();
+
+            List<RadiationPoint> copy = copyPoints();
+
+            for (RadiationPoint p : copy) {
+                GeoPoint geoPoint = new GeoPoint(p.lat, p.lon);
+                projection.toPixels(geoPoint, screenPoint);
+
+                circlePaint.setARGB(220, 255, 220, 0);
+                canvas.drawCircle(screenPoint.x, screenPoint.y, 32.0f, circlePaint);
+
+                textPaint.setARGB(255, 0, 0, 0);
+                canvas.drawText("☢", screenPoint.x, screenPoint.y + 11.0f, textPaint);
+
+                textPaint.setTextSize(24.0f);
+                textPaint.setARGB(255, 255, 255, 255);
+                canvas.drawText(
+                        p.cpm + " CPM",
+                        screenPoint.x,
+                        screenPoint.y - 42.0f,
+                        textPaint
+                );
+                textPaint.setTextSize(32.0f);
+            }
+        }
     }
 
     @Override
@@ -115,8 +152,7 @@ public class MapFragment extends Fragment {
 
         if (map != null) {
             map.onResume();
-            redrawMarkers();
-            map.invalidate();
+            redraw();
         }
     }
 
@@ -133,6 +169,7 @@ public class MapFragment extends Fragment {
     public void onDestroyView() {
         map = null;
         btnHome = null;
+        radiationOverlay = null;
         super.onDestroyView();
     }
 }
