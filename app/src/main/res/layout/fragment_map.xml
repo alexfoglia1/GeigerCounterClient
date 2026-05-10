@@ -14,7 +14,7 @@
         android:layout_height="wrap_content"
         android:text="Home"
         android:layout_gravity="top|start"
-        android:layout_margin="16dp" />
+        android:layout_margin="1dp" />
 
     <Button
         android:id="@+id/btnClear"
