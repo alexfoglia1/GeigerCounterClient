@@ -179,14 +179,6 @@ public class MapFragment extends Fragment {
         super.onPause();
     }
 
-    @Override
-    public void onDestroyView() {
-        map = null;
-        btnHome = null;
-        radiationOverlay = null;
-        super.onDestroyView();
-    }
-
     public void forceRedraw() {
         if (map == null) return;
     

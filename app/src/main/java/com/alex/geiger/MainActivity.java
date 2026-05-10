@@ -72,6 +72,8 @@ public class MainActivity extends AppCompatActivity {
         viewPager.setUserInputEnabled(false);
         viewPager.setAdapter(new ScreenSlidePagerAdapter(this, geigerFragment, mapFragment));
 
+        viewPager.setOffscreenPageLimit(2);
+        
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
         requestLocationPermissionIfNeeded();
