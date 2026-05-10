@@ -62,6 +62,13 @@ public class MapFragment extends Fragment {
         radiationOverlay = new RadiationOverlay();
         map.getOverlays().add(radiationOverlay);
 
+        map.postDelayed(() -> {
+            if (map != null) {
+                redraw();
+                map.invalidate();
+            }
+        }, 300);
+
         btnHome.setOnClickListener(v -> {
             if (getActivity() instanceof MainActivity) {
                 ((MainActivity) getActivity()).showHome();
@@ -149,10 +156,17 @@ public class MapFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-
+    
         if (map != null) {
             map.onResume();
-            redraw();
+    
+            map.postDelayed(() -> {
+                if (map != null) {
+                    map.getController().setZoom(map.getZoomLevelDouble());
+                    redraw();
+                    map.invalidate();
+                }
+            }, 300);
         }
     }
 
@@ -171,5 +185,16 @@ public class MapFragment extends Fragment {
         btnHome = null;
         radiationOverlay = null;
         super.onDestroyView();
+    }
+
+    public void forceRedraw() {
+        if (map == null) return;
+    
+        map.postDelayed(() -> {
+            if (map != null) {
+                redraw();
+                map.invalidate();
+            }
+        }, 100);
     }
 }

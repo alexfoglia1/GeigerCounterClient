@@ -160,6 +160,12 @@ public class MainActivity extends AppCompatActivity {
     public void showMap() {
         ViewPager2 viewPager = findViewById(R.id.viewPager);
         viewPager.setCurrentItem(1, true);
+    
+        viewPager.postDelayed(() -> {
+            if (mapFragment != null) {
+                mapFragment.forceRedraw();
+            }
+        }, 300);
     }
     
     public void showHome() {
