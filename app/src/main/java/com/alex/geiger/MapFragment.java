@@ -26,6 +26,8 @@ public class MapFragment extends Fragment {
     private Button btnHome;
     private Button btnClear;
     private RadiationOverlay radiationOverlay;
+    private double lastLat;
+    private double lastLon;
 
     private static final GeoPoint CAMPI_BISENZIO =
             new GeoPoint(43.8245, 11.1306);
@@ -68,6 +70,8 @@ public class MapFragment extends Fragment {
         map.setMultiTouchControls(true);
         map.getController().setZoom(15.5);
         map.getController().setCenter(CAMPI_BISENZIO);
+        lastLat = CAMPI_BISENZIO.getLatitude();
+        lastLon = CAMPI_BISENZIO.getLongitude();
 
         radiationOverlay = new RadiationOverlay();
         map.getOverlays().add(radiationOverlay);
@@ -96,6 +100,8 @@ public class MapFragment extends Fragment {
 
     public synchronized void addRadiationMarker(double lat, double lon, short cpm, double usv_h) {
         points.add(new RadiationPoint(lat, lon, cpm, usv_h));
+        lastLat = lat;
+        lastLon = lon;
 
         if (getActivity() == null) return;
 
@@ -110,13 +116,7 @@ public class MapFragment extends Fragment {
         if (map == null) return;
 
         List<RadiationPoint> copy = copyPoints();
-
-        if (copy.size() > 0) {
-            RadiationPoint last = copy.get(copy.size() - 1);
-            map.getController().setCenter(new GeoPoint(last.lat, last.lon));
-        } else {
-            map.getController().setCenter(CAMPI_BISENZIO);
-        }
+        map.getController().setCenter(new GeoPoint(lastLat, lastLon));
 
         map.invalidate();
     }
