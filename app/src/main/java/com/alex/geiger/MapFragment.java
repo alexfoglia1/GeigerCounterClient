@@ -13,14 +13,31 @@ import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
 
+import java.util.ArrayList;
+
 public class MapFragment extends Fragment {
 
     private MapView map;
     private Button btnHome;
-    private boolean centeredOnce = false;
 
     private static final GeoPoint CAMPI_BISENZIO =
             new GeoPoint(43.8245, 11.1306);
+
+    private final ArrayList<RadiationPoint> points = new ArrayList<>();
+
+    private static class RadiationPoint {
+        double lat;
+        double lon;
+        short cpm;
+        double usv_h;
+
+        RadiationPoint(double lat, double lon, short cpm, double usv_h) {
+            this.lat = lat;
+            this.lon = lon;
+            this.cpm = cpm;
+            this.usv_h = usv_h;
+        }
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -42,30 +59,54 @@ public class MapFragment extends Fragment {
             }
         });
 
+        redrawMarkers();
+
         return view;
     }
 
-    public void addRadiationMarker(double lat, double lon, short cpm, double usv_h) {
-        if (map == null || getActivity() == null) return;
+    public synchronized void addRadiationMarker(double lat, double lon, short cpm, double usv_h) {
+        points.add(new RadiationPoint(lat, lon, cpm, usv_h));
+
+        if (getActivity() == null) {
+            return;
+        }
 
         getActivity().runOnUiThread(() -> {
-            GeoPoint point = new GeoPoint(lat, lon);
+            try {
+                redrawMarkers();
+            } catch (Exception ignored) {
+            }
+        });
+    }
+
+    private synchronized void redrawMarkers() {
+        if (map == null) {
+            return;
+        }
+
+        map.getOverlays().clear();
+
+        for (RadiationPoint p : points) {
+            GeoPoint point = new GeoPoint(p.lat, p.lon);
 
             Marker marker = new Marker(map);
             marker.setPosition(point);
             marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-            marker.setTitle("☢ CPM: " + cpm + " | uSv/h: " + String.format("%.3f", usv_h));
-            marker.setSnippet("Lat: " + lat + "\nLon: " + lon);
+
+            marker.setTitle("CPM: " + p.cpm + " | uSv/h: " + String.format("%.3f", p.usv_h));
+            marker.setSnippet("Lat: " + p.lat + "\nLon: " + p.lon);
 
             map.getOverlays().add(marker);
+        }
 
-            if (!centeredOnce) {
-                map.getController().setCenter(point);
-                centeredOnce = true;
-            }
+        if (points.size() == 0) {
+            map.getController().setCenter(CAMPI_BISENZIO);
+        } else {
+            RadiationPoint last = points.get(points.size() - 1);
+            map.getController().setCenter(new GeoPoint(last.lat, last.lon));
+        }
 
-            map.invalidate();
-        });
+        map.invalidate();
     }
 
     @Override
@@ -74,11 +115,8 @@ public class MapFragment extends Fragment {
 
         if (map != null) {
             map.onResume();
-
-            map.postDelayed(() -> {
-                map.invalidate();
-                map.getController().setCenter(map.getMapCenter());
-            }, 300);
+            redrawMarkers();
+            map.invalidate();
         }
     }
 
@@ -89,5 +127,12 @@ public class MapFragment extends Fragment {
         }
 
         super.onPause();
+    }
+
+    @Override
+    public void onDestroyView() {
+        map = null;
+        btnHome = null;
+        super.onDestroyView();
     }
 }

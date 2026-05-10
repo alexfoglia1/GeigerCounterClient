@@ -127,18 +127,21 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onRadiationMeasurement(short cpm, double usv_h) {
-        Location loc = lastLocation;
-
-        if (loc == null || mapFragment == null) {
-            return;
+        try {
+            Location loc = lastLocation;
+    
+            if (loc == null || mapFragment == null) {
+                return;
+            }
+    
+            mapFragment.addRadiationMarker(
+                    loc.getLatitude(),
+                    loc.getLongitude(),
+                    cpm,
+                    usv_h
+            );
+        } catch (Exception ignored) {
         }
-
-        mapFragment.addRadiationMarker(
-                loc.getLatitude(),
-                loc.getLongitude(),
-                cpm,
-                usv_h
-        );
     }
 
     @Override
