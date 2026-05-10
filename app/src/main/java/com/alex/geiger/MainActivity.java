@@ -8,6 +8,7 @@ import androidx.viewpager2.widget.ViewPager2;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 
@@ -21,12 +22,50 @@ public class MainActivity extends AppCompatActivity {
     private LocationManager locationManager;
     private volatile Location lastLocation;
 
+    private final LocationListener gpsListener = new LocationListener() {
+        @Override
+        public void onLocationChanged(Location location) {
+            lastLocation = location;
+        }
+
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+        }
+
+        @Override
+        public void onProviderEnabled(String provider) {
+        }
+
+        @Override
+        public void onProviderDisabled(String provider) {
+        }
+    };
+
+    private final LocationListener networkListener = new LocationListener() {
+        @Override
+        public void onLocationChanged(Location location) {
+            lastLocation = location;
+        }
+
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+        }
+
+        @Override
+        public void onProviderEnabled(String provider) {
+        }
+
+        @Override
+        public void onProviderDisabled(String provider) {
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-		geigerFragment = new GeigerFragment();
+        geigerFragment = new GeigerFragment();
         mapFragment = new MapFragment();
 
         ViewPager2 viewPager = findViewById(R.id.viewPager);
@@ -70,16 +109,16 @@ public class MainActivity extends AppCompatActivity {
 
             locationManager.requestLocationUpdates(
                     LocationManager.GPS_PROVIDER,
-                    2000,
-                    1,
-                    location -> lastLocation = location
+                    2000L,
+                    1.0f,
+                    gpsListener
             );
 
             locationManager.requestLocationUpdates(
                     LocationManager.NETWORK_PROVIDER,
-                    2000,
-                    1,
-                    location -> lastLocation = location
+                    2000L,
+                    1.0f,
+                    networkListener
             );
 
         } catch (Exception ignored) {
@@ -104,7 +143,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         try {
-            locationManager.removeUpdates(location -> {});
+            if (locationManager != null) {
+                locationManager.removeUpdates(gpsListener);
+                locationManager.removeUpdates(networkListener);
+            }
         } catch (Exception ignored) {
         }
 
