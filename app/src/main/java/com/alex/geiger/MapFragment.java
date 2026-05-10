@@ -63,6 +63,7 @@ public class MapFragment extends Fragment {
 
         map = view.findViewById(R.id.map);
         btnHome = view.findViewById(R.id.btnHome);
+        btnClear = view.findViewById(R.id.btnClear);
 
         map.setMultiTouchControls(true);
         map.getController().setZoom(15.5);
