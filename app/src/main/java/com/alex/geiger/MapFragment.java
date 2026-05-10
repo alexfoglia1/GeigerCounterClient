@@ -135,20 +135,20 @@ public class MapFragment extends Fragment {
                 projection.toPixels(geoPoint, screenPoint);
 
                 circlePaint.setARGB(220, 255, 220, 0);
-                canvas.drawCircle(screenPoint.x, screenPoint.y, 32.0f, circlePaint);
+                canvas.drawCircle(screenPoint.x, screenPoint.y, 96.0f, circlePaint);
 
                 textPaint.setARGB(255, 0, 0, 0);
-                canvas.drawText("☢", screenPoint.x, screenPoint.y + 11.0f, textPaint);
+                textPaint.setTextSize(50.0f);
+                canvas.drawText("☢", screenPoint.x, screenPoint.y + 33.0f, textPaint);
 
-                textPaint.setTextSize(24.0f);
-                textPaint.setARGB(255, 255, 255, 255);
+                
+                textPaint.setARGB(255, 0, 0, 0);
                 canvas.drawText(
                         p.cpm + " CPM",
                         screenPoint.x,
-                        screenPoint.y - 42.0f,
+                        screenPoint.y - 122.0f,
                         textPaint
                 );
-                textPaint.setTextSize(32.0f);
             }
         }
     }
