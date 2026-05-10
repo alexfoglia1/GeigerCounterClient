@@ -24,6 +24,7 @@ public class MapFragment extends Fragment {
 
     private MapView map;
     private Button btnHome;
+    private Button btnClear;
     private RadiationOverlay radiationOverlay;
 
     private static final GeoPoint CAMPI_BISENZIO =
@@ -45,6 +46,14 @@ public class MapFragment extends Fragment {
         }
     }
 
+    private void clearPoints()
+    {
+        points.clear();
+
+        if (getActivity() == null) return;
+
+        getActivity().runOnUiThread(() -> redraw());
+    }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
@@ -73,6 +82,10 @@ public class MapFragment extends Fragment {
             if (getActivity() instanceof MainActivity) {
                 ((MainActivity) getActivity()).showHome();
             }
+        });
+
+        btnClear.setOnClickListener(v -> {
+            clearPoints();
         });
 
         redraw();
