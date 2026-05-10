@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 
 import androidx.fragment.app.Fragment;
 
@@ -15,7 +16,11 @@ import org.osmdroid.views.overlay.Marker;
 public class MapFragment extends Fragment {
 
     private MapView map;
+    private Button btnHome;
     private boolean centeredOnce = false;
+
+    private static final GeoPoint CAMPI_BISENZIO =
+            new GeoPoint(43.8245, 11.1306);
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -25,11 +30,17 @@ public class MapFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_map, container, false);
 
         map = view.findViewById(R.id.map);
-        map.setMultiTouchControls(true);
-        map.getController().setZoom(17.0);
+        btnHome = view.findViewById(R.id.btnHome);
 
-        GeoPoint defaultPoint = new GeoPoint(43.7696, 11.2558);
-        map.getController().setCenter(defaultPoint);
+        map.setMultiTouchControls(true);
+        map.getController().setZoom(15.5);
+        map.getController().setCenter(CAMPI_BISENZIO);
+
+        btnHome.setOnClickListener(v -> {
+            if (getActivity() instanceof MainActivity) {
+                ((MainActivity) getActivity()).showHome();
+            }
+        });
 
         return view;
     }
@@ -60,12 +71,23 @@ public class MapFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        if (map != null) map.onResume();
+
+        if (map != null) {
+            map.onResume();
+
+            map.postDelayed(() -> {
+                map.invalidate();
+                map.getController().setCenter(map.getMapCenter());
+            }, 300);
+        }
     }
 
     @Override
     public void onPause() {
-        if (map != null) map.onPause();
+        if (map != null) {
+            map.onPause();
+        }
+
         super.onPause();
     }
 }

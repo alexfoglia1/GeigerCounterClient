@@ -28,6 +28,7 @@ public class GeigerFragment extends Fragment {
     private Button btnGetCpm;
     private Button btnAuto;
     private Button btnChangeNetwork;
+    private Button btnMap;
 
     private Spinner spinnerSeconds;
 
@@ -67,7 +68,7 @@ public class GeigerFragment extends Fragment {
         txtCpm = view.findViewById(R.id.txtCpm);
         txtUsv_h = view.findViewById(R.id.txtuSv_h);
 
-        String[] values = {"10", "20", "30", "40", "50", "60"};
+        String[] values = {"1", "5", "10", "20", "30", "40", "50", "60"};
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
                 requireContext(),
                 android.R.layout.simple_spinner_item,
@@ -75,6 +76,14 @@ public class GeigerFragment extends Fragment {
         );
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerSeconds.setAdapter(adapter);
+
+        btnMap = view.findViewById(R.id.btnMap);
+
+        btnMap.setOnClickListener(v -> {
+            if (getActivity() instanceof MainActivity) {
+                ((MainActivity) getActivity()).showMap();
+            }
+        });
 
         btnGetCpm.setOnClickListener(v -> {
             startRxIfNeeded();

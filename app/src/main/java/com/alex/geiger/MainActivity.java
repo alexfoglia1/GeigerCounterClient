@@ -69,6 +69,7 @@ public class MainActivity extends AppCompatActivity {
         mapFragment = new MapFragment();
 
         ViewPager2 viewPager = findViewById(R.id.viewPager);
+        viewPager.setUserInputEnabled(false);
         viewPager.setAdapter(new ScreenSlidePagerAdapter(this, geigerFragment, mapFragment));
 
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
@@ -151,5 +152,15 @@ public class MainActivity extends AppCompatActivity {
         }
 
         super.onDestroy();
+    }
+
+    public void showMap() {
+        ViewPager2 viewPager = findViewById(R.id.viewPager);
+        viewPager.setCurrentItem(1, true);
+    }
+    
+    public void showHome() {
+        ViewPager2 viewPager = findViewById(R.id.viewPager);
+        viewPager.setCurrentItem(0, true);
     }
 }
